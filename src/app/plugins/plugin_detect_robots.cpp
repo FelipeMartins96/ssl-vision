@@ -20,7 +20,7 @@
 //========================================================================
 #include "plugin_detect_robots.h"
 
-PluginDetectRobots::PluginDetectRobots(FrameBuffer * _buffer, LUT3D * lut, const CameraParameters& camera_params, const RoboCupField& field, CMPattern::TeamSelector * _global_team_selector_blue, CMPattern::TeamSelector * _global_team_selector_yellow, CMPattern::TeamDetectorSettings * _global_team_settings)
+PluginDetectRobots::PluginDetectRobots(FrameBuffer * _buffer, LUT3D * lut, const CameraParameters& camera_params, const RoboCupField& field, CMPattern::TeamSelector * _global_team_selector_blue, CMPattern::TeamSelector * _global_team_selector_yellow)
  : VisionPlugin(_buffer), camera_parameters(camera_params), field(field)
 {
   _lut=lut;
@@ -43,7 +43,6 @@ PluginDetectRobots::PluginDetectRobots(FrameBuffer * _buffer, LUT3D * lut, const
 
   global_team_selector_blue=_global_team_selector_blue;
   global_team_selector_yellow=_global_team_selector_yellow;
-  global_team_detector_settings=_global_team_settings;
 
   team_detector_blue=new CMPattern::TeamDetector(_lut,camera_params,field);
   team_detector_yellow=new CMPattern::TeamDetector(_lut,camera_params,field);
@@ -52,7 +51,6 @@ PluginDetectRobots::PluginDetectRobots(FrameBuffer * _buffer, LUT3D * lut, const
   _notifier.addRecursive(_settings);
   connect(_global_team_selector_blue,SIGNAL(signalTeamDataChanged()),&_notifier,SLOT(changeSlotOtherChange()));
   connect(_global_team_selector_yellow,SIGNAL(signalTeamDataChanged()),&_notifier,SLOT(changeSlotOtherChange()));
-  connect(_global_team_settings,SIGNAL(signalTeamDataChanged()),&_notifier,SLOT(changeSlotOtherChange()));
 }
 
 PluginDetectRobots::~PluginDetectRobots()
@@ -139,7 +137,7 @@ ProcessResult PluginDetectRobots::process(FrameData * data, RenderOptions * opti
     }
     if (team!=0) {
       if (need_reinit) {
-        detector->init(global_team_detector_settings->getRobotPattern(), team);
+        detector->init(team);
       }
 
       detector->update(robotlist, color_id,  num_robots, image, colorlist, reg_tree);

@@ -28,7 +28,6 @@ StackRoboCupSSL::StackRoboCupSSL(
     PluginDetectBallsSettings * _global_ball_settings,
     PluginPublishGeometry * _global_plugin_publish_geometry,
     PluginLegacyPublishGeometry * _legacy_plugin_publish_geometry,
-    CMPattern::TeamDetectorSettings* _global_team_settings,
     CMPattern::TeamSelector * _global_team_selector_blue,
     CMPattern::TeamSelector * _global_team_selector_yellow,
     RoboCupSSLServer * ds_udp_server_new,
@@ -39,7 +38,6 @@ StackRoboCupSSL::StackRoboCupSSL(
     _cam_settings_filename(cam_settings_filename),
     global_field(_global_field),
     global_ball_settings(_global_ball_settings),
-    global_team_settings(_global_team_settings),
     global_team_selector_blue(_global_team_selector_blue),
     global_team_selector_yellow(_global_team_selector_yellow),
     _ds_udp_server_new(ds_udp_server_new),
@@ -74,7 +72,7 @@ StackRoboCupSSL::StackRoboCupSSL(
 
   stack.push_back(new PluginFindBlobs(_fb,lut_yuv));
 
-  stack.push_back(new PluginDetectRobots(_fb,lut_yuv,*camera_parameters,*global_field,global_team_selector_blue,global_team_selector_yellow, global_team_settings));
+  stack.push_back(new PluginDetectRobots(_fb,lut_yuv,*camera_parameters,*global_field,global_team_selector_blue,global_team_selector_yellow));
 
   stack.push_back(new PluginDetectBalls(_fb,lut_yuv,*camera_parameters,*global_field,global_ball_settings));
 

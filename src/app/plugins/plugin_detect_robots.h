@@ -54,7 +54,6 @@ protected:
 
   CMVision::RegionTree reg_tree;
 
-  CMPattern::TeamDetectorSettings * global_team_detector_settings;
   CMPattern::TeamSelector * global_team_selector_blue;
   CMPattern::TeamSelector * global_team_selector_yellow;
 
@@ -69,7 +68,7 @@ protected:
 protected slots:
     void teamDataChange();
 public:
-    PluginDetectRobots(FrameBuffer * _buffer, LUT3D * lut, const CameraParameters& camera_params, const RoboCupField& field, CMPattern::TeamSelector * _global_team_selector_blue, CMPattern::TeamSelector * _global_team_selector_yellow, CMPattern::TeamDetectorSettings * global_team_settings);
+    PluginDetectRobots(FrameBuffer * _buffer, LUT3D * lut, const CameraParameters& camera_params, const RoboCupField& field, CMPattern::TeamSelector * _global_team_selector_blue, CMPattern::TeamSelector * _global_team_selector_yellow);
 
     ~PluginDetectRobots();
 
