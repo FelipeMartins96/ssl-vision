@@ -209,7 +209,7 @@ void TeamDetector::findRobotsByTeamMarkerOnly(::google::protobuf::RepeatedPtrFie
     //TODO: add confidence masking:
     //float conf = det.mask.get(reg->cen_x,reg->cen_y);
     double conf=1.0;
-    if (field_filter.isInFieldOrPlayableBoundary(reg_center) &&  ((_histogram_enable==false) || checkHistogram(reg,image)==true)) {
+    if ((_histogram_enable==false) || checkHistogram(reg,image)==true) {
       double area = getRegionArea(reg,_robot_height);
       double area_err = fabs(area - _center_marker_area_mean);
 
@@ -436,65 +436,63 @@ void TeamDetector::findRobotsByModel(::google::protobuf::RepeatedPtrField< ::SSL
     vector2d reg_center(reg_center3d.x,reg_center3d.y);
     //TODO add masking:
     //if(det.mask.get(reg->cen_x,reg->cen_y) >= 0.5){
-    if (field_filter.isInFieldOrPlayableBoundary(reg_center)) {
-      cen.set(reg,reg_center3d,getRegionArea(reg,_robot_height));
-      int num_markers = 0;
+    cen.set(reg,reg_center3d,getRegionArea(reg,_robot_height));
+    int num_markers = 0;
 
-      reg_tree.startQuery(*reg,marker_max_query_dist);
-      double sd=0.0;
-      CMVision::Region *mreg;
-      while((mreg=reg_tree.getNextNearest(sd))!=0 && num_markers<MaxDetections) {
-        //TODO: implement masking:
-        // filter_other.check(*mreg) && det.mask.get(mreg->cen_x,mreg->cen_y)>=0.5
+    reg_tree.startQuery(*reg,marker_max_query_dist);
+    double sd=0.0;
+    CMVision::Region *mreg;
+    while((mreg=reg_tree.getNextNearest(sd))!=0 && num_markers<MaxDetections) {
+      //TODO: implement masking:
+      // filter_other.check(*mreg) && det.mask.get(mreg->cen_x,mreg->cen_y)>=0.5
 
-        if(filter_others.check(*mreg) && model.usesColor(mreg->color)) {
-          vector2d marker_img_center(mreg->cen_x,mreg->cen_y);
-          vector3d marker_center3d;
-          _camera_params.image2field(marker_center3d,marker_img_center,_robot_height);
-          Marker &m = markers[num_markers];
+      if(filter_others.check(*mreg) && model.usesColor(mreg->color)) {
+        vector2d marker_img_center(mreg->cen_x,mreg->cen_y);
+        vector3d marker_center3d;
+        _camera_params.image2field(marker_center3d,marker_img_center,_robot_height);
+        Marker &m = markers[num_markers];
 
-          m.set(mreg,marker_center3d,getRegionArea(mreg,_robot_height));
-          vector2f ofs = m.loc - cen.loc;
-          m.dist = ofs.length();
-          m.angle = ofs.angle();
+        m.set(mreg,marker_center3d,getRegionArea(mreg,_robot_height));
+        vector2f ofs = m.loc - cen.loc;
+        m.dist = ofs.length();
+        m.angle = ofs.angle();
 
-          if(m.dist>0.0 && m.dist<marker_max_dist){
-            num_markers++;
-          }
+        if(m.dist>0.0 && m.dist<marker_max_dist){
+          num_markers++;
         }
       }
-      reg_tree.endQuery();
+    }
+    reg_tree.endQuery();
 
-      if(num_markers >= 2){
-        CMPattern::PatternProcessing::sortMarkersByAngle(markers,num_markers);
-        for(int i=0; i<num_markers; i++){
-          /*DEBUG CODE:
-          char colorchar='?';
-          if (markers[i].id==color_id_green) colorchar='g';
-          if (markers[i].id==color_id_pink) colorchar='p';
-          if (markers[i].id==color_id_white) colorchar='w';
-          if (markers[i].id==color_id_team) colorchar='t';
-          if (markers[i].id==color_id_field_green) colorchar='f';
-          if (markers[i].id==color_id_cyan) colorchar='c';
-          printf("%c ",colorchar);*/
-          int j = (i + 1) % num_markers;
-          markers[i].next_dist = dist(markers[i].loc,markers[j].loc);
-          markers[i].next_angle_dist = angle_pos(angle_diff(markers[i].angle,markers[j].angle));
-        }
+    if(num_markers >= 2){
+      CMPattern::PatternProcessing::sortMarkersByAngle(markers,num_markers);
+      for(int i=0; i<num_markers; i++){
+        /*DEBUG CODE:
+        char colorchar='?';
+        if (markers[i].id==color_id_green) colorchar='g';
+        if (markers[i].id==color_id_pink) colorchar='p';
+        if (markers[i].id==color_id_white) colorchar='w';
+        if (markers[i].id==color_id_team) colorchar='t';
+        if (markers[i].id==color_id_field_green) colorchar='f';
+        if (markers[i].id==color_id_cyan) colorchar='c';
+        printf("%c ",colorchar);*/
+        int j = (i + 1) % num_markers;
+        markers[i].next_dist = dist(markers[i].loc,markers[j].loc);
+        markers[i].next_angle_dist = angle_pos(angle_diff(markers[i].angle,markers[j].angle));
+      }
 
-        if (model.findPattern(res,markers,num_markers,_pattern_fit_params,_camera_params)) {
-              robot=addRobot(robots,res.conf,_max_robots*2);
-              if (robot!=0) {
-                //setup robot:
-                robot->set_x(cen.loc.x);
-                robot->set_y(cen.loc.y);
-                if (_have_angle) robot->set_orientation(res.angle);
-                robot->set_robot_id(res.id);
-                robot->set_pixel_x(reg->cen_x);
-                robot->set_pixel_y(reg->cen_y);
-                robot->set_height(cen.height);
-              }
-        }
+      if (model.findPattern(res,markers,num_markers,_pattern_fit_params,_camera_params)) {
+            robot=addRobot(robots,res.conf,_max_robots*2);
+            if (robot!=0) {
+              //setup robot:
+              robot->set_x(cen.loc.x);
+              robot->set_y(cen.loc.y);
+              if (_have_angle) robot->set_orientation(res.angle);
+              robot->set_robot_id(res.id);
+              robot->set_pixel_x(reg->cen_x);
+              robot->set_pixel_y(reg->cen_y);
+              robot->set_height(cen.height);
+            }
       }
     }
   }

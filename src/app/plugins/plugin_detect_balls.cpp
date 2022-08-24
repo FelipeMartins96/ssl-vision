@@ -220,14 +220,14 @@ ProcessResult PluginDetectBalls::process ( FrameData * data, RenderOptions * opt
       vector2d field_pos ( field_pos_3d.x,field_pos_3d.y );
 
       //filter points that are outside of the field:
-      if ( filter_ball_in_field==true && field_filter.isInFieldPlusThreshold ( field_pos, max(0.0,filter_ball_on_field_filter_threshold) ) ==false ) {
-        conf = 0.0;
-      }
+      // if ( filter_ball_in_field==true && field_filter.isInFieldPlusThreshold ( field_pos, max(0.0,filter_ball_on_field_filter_threshold) ) ==false ) {
+      //   conf = 0.0;
+      // }
 
-      //filter out points that are deep inside the goal-box
-      if ( filter_ball_in_goal==true && field_filter.isFarInGoal ( field_pos ) ==true ) {
-        conf = 0.0;
-      }
+      // //filter out points that are deep inside the goal-box
+      // if ( filter_ball_in_goal==true && field_filter.isFarInGoal ( field_pos ) ==true ) {
+      //   conf = 0.0;
+      // }
 
       //TODO add ball-too-near-robot filter
       if ( use_near_robot_filter && conf > 0.0 ) {
